@@ -116,6 +116,58 @@ class controller_home extends CI_Controller {
         $this->model_data->update_inventory($mac,$name,$temp);
         $this->load->view('view_inventory.html');
 
+    }
+
+    public function interface(){
+        $this->load->view('view_interface_setup');
+    }
+
+    public function interface_setup(){
+        $ip = $_POST['ipaddress'];
+        $net = $_POST['netmask'];
+        $gw = $_POST['gateway'];
+        $dns = $_POST['dns'];
+
+        $file = fopen("/etc/network/interfaces","w");
+
+        echo fwrite($file,"source /etc/network/interfaces.d/*"."\n");
+        echo fwrite($file,"auto lo"."\n");
+        echo fwrite($file,"iface lo inet loopback"."\n");
+        echo fwrite($file,"\n");
+        echo fwrite($file,"auto enp0s3"."\n");
+        echo fwrite($file,"iface enp0s3 inet static"."\n");
+        echo fwrite($file,"address $ip"."\n");
+        echo fwrite($file,"netmask $net"."\n");
+        //echo fwrite($file,"network 192.168.1.0"."\n");
+        echo fwrite($file,"gateway $gw"."\n");
+        echo fwrite($file,"dns-nameservers $dns 8.8.4.4"."\n");
+        echo fwrite($file,"\n");
+        echo fwrite($file,"auto enp0s8"."\n");
+        echo fwrite($file,"iface enp0s8 inet dhcp"."\n");
+        fclose($file);
+
+        shell_exec('sh /home/sitita/reboot.sh');
+
+    }
+
+    public function email(){
+        $this->load->model('model_data');
+        $data['email'] = $this->model_data->view_email();
+        $this->load->view('view_email',$data);
+    }
+
+    public function edit_email(){
+        $SMTPAuth = $_POST["SMTPAuth"];
+        $SMTPSecure = $_POST["SMTPSecure"];
+        $host = $_POST["host"];
+        $port = $_POST["port"];
+        $username = $_POST["username"];
+        $password = $_POST["password"];
+        $email = $_POST["from"];
+        $this->load->model('model_data');
+        $this->model_data->update_email($SMTPAuth, $SMTPSecure, $host, $port, $username, $password, $email);
+        $this->load->view('view_email');
+
 
 
     }
